@@ -1,0 +1,209 @@
+<!doctype html><html lang=ko><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name="robots" content="noindex, nofollow"><title>Argus · 자율 투자 에이전트</title><style>
+:root{color-scheme:dark;}
+*{box-sizing:border-box;}
+body{margin:0;background:#0b0e14;color:#e6e9ef;font:14px/1.5 -apple-system,Segoe UI,Roboto,'Malgun Gothic',sans-serif;}
+.wrap{max-width:1040px;margin:0 auto;padding:22px 18px 60px;}
+h1{font-size:20px;margin:0;letter-spacing:.5px;}
+h1 .eye{color:#5aa9ff;}
+.sub{color:#8b94a3;font-size:12px;margin-top:3px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0;}
+.card{background:#141925;border:1px solid #222a3a;border-radius:12px;padding:14px 16px;}
+.card .k{color:#8b94a3;font-size:11px;text-transform:uppercase;letter-spacing:.6px;}
+.card .v{font-size:22px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums;}
+.card .v small{font-size:12px;color:#8b94a3;font-weight:400;}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+.ok{background:#3ddc84;} .warn{background:#ffb454;} .bad{background:#ff5c63;}
+.sec{margin:22px 0 8px;font-size:13px;color:#8b94a3;text-transform:uppercase;letter-spacing:.6px;}
+.panel{background:#141925;border:1px solid #222a3a;border-radius:12px;padding:16px 18px;}
+.alert{background:linear-gradient(90deg,#3a0d10,#2a0a0c);border:1px solid #ff5c63;border-radius:12px;padding:14px 18px;margin-bottom:6px;}
+.alert b{color:#ff8c91;}
+.alert ul{margin:8px 0 0;padding-left:20px;}
+.mv{color:#cdd4e0;line-height:1.65;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #1c2433;}
+th{color:#8b94a3;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.4px;}
+td.mono,.mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,Consolas,monospace;}
+.chip{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#1c2433;}
+.veto{color:#ff8c91;} .fill{color:#3ddc84;}
+.side-buy{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#3ddc84;white-space:nowrap;}
+.side-sell{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#3a1013;color:#ff8c91;white-space:nowrap;}
+/* 오늘 봇 거래 표 — 짧은 칸 고정, 내용은 근거+설명 */
+table.trades{table-layout:fixed;width:100%;}
+table.trades th:nth-child(1),table.trades td:nth-child(1){width:68px;white-space:nowrap;}
+table.trades th:nth-child(2),table.trades td:nth-child(2){width:58px;white-space:nowrap;}
+table.trades th:nth-child(3),table.trades td:nth-child(3){width:88px;white-space:nowrap;}
+table.trades th:nth-child(4),table.trades td:nth-child(4){width:52px;white-space:nowrap;text-align:right;}
+table.trades th:nth-child(5),table.trades td:nth-child(5){width:88px;white-space:nowrap;text-align:right;}
+table.trades th:nth-child(6),table.trades td:nth-child(6){width:auto;}
+table.trades td{overflow:visible;vertical-align:top;}
+table.trades td.nm{font-weight:600;color:#e6e9ef;}
+table.trades td.num{font-variant-numeric:tabular-nums;font-family:ui-monospace,Consolas,monospace;color:#cdd4e0;}
+.tr-err{color:#ff8c91;font-size:12px;}
+.tr-why{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#232a36;color:#ffcf6b;}
+.tr-thesis{position:relative;margin-top:8px;display:inline-block;max-width:100%;cursor:help;}
+.tr-brief{color:#9aa4b2;font-size:12px;line-height:1.6;border-bottom:1px dotted #5a6373;}
+.tr-tip{
+  display:none;position:absolute;left:0;top:calc(100% + 8px);z-index:80;
+  width:min(440px,70vw);max-height:260px;overflow:auto;
+  padding:10px 12px;border-radius:10px;border:1px solid #2a3548;
+  background:#0f1522;color:#cdd4e0;font-size:12px;line-height:1.55;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);white-space:pre-wrap;word-break:keep-all;
+}
+.tr-thesis:hover .tr-tip{display:block;}
+/* 진입대기 카드 */
+.armed-list{display:flex;flex-direction:column;gap:10px;}
+.armed-card{background:#0b1220;border:1px solid #243349;border-radius:10px;padding:12px 14px;}
+.armed-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.armed-nm{font-weight:700;font-size:14px;color:#e6e9ef;flex:0 0 auto;}
+.armed-chips{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto;align-items:center;}
+.armed-chip{white-space:nowrap;}
+.armed-chip-day{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#1a2740;color:#5aa9ff;}
+.armed-chip-swing{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#2a2240;color:#c9a3ff;}
+.armed-chip-position{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#1c2a33;color:#7fd1ff;}
+.armed-chip-value{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#7bd88f;}
+.armed-chip-zone{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#3ddc84;}
+.armed-chip-breakout{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#332a10;color:#ffcf6b;}
+.armed-chip-signal{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#232a36;color:#9aa4b2;}
+.armed-ts{margin-left:auto;font-size:11px;color:#8b94a3;white-space:nowrap;}
+.armed-body{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;}
+@media(max-width:640px){.armed-body{grid-template-columns:1fr;}}
+.armed-col{display:flex;flex-direction:column;gap:4px;}
+.armed-kv{display:flex;justify-content:space-between;gap:10px;font-size:12px;line-height:1.5;}
+.armed-kv .k{color:#8b94a3;flex:0 0 auto;}
+.armed-kv .v{color:#cdd4e0;text-align:right;}
+.armed-rationale{margin-top:10px;padding-top:8px;border-top:1px solid #1c2433;display:flex;gap:10px;font-size:11px;line-height:1.45;}
+.armed-rationale .k{color:#8b94a3;flex:0 0 auto;}
+.armed-rat{color:#9aa4b2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:default;}
+.pos{color:#3ddc84;} .neg{color:#ff5c63;}
+.muted{color:#6b7280;}
+.foot{margin-top:26px;color:#5a6373;font-size:11px;text-align:center;}
+/* stance 뱃지 / route 칩 */
+.b-bull{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#3ddc84;}
+.b-neut{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#232a36;color:#9aa4b2;}
+.b-bear{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#3a1013;color:#ff5c63;}
+/* 자산 관제 패널 */
+.asset{background:linear-gradient(120deg,#101a2a,#0d1320);border:1px solid #243349;border-radius:14px;padding:18px 20px 16px;margin:14px 0 6px;}
+.asset .hd{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.asset .hd .ttl{font-size:14px;font-weight:600;letter-spacing:.4px;}
+.asset .hd .fresh{margin-left:auto;font-size:11px;color:#8b94a3;}
+.asset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;}
+.asset-grid .k{color:#8b94a3;font-size:11px;text-transform:uppercase;letter-spacing:.6px;}
+.asset-grid .big{font-size:28px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums;line-height:1.15;}
+.asset-grid .big small{font-size:13px;font-weight:500;}
+.asset-grid .sub2{font-size:12px;margin-top:3px;font-variant-numeric:tabular-nums;}
+.asset-books{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px;}
+.asset-book{background:#0b1220;border:1px solid #243349;border-radius:10px;padding:12px 14px;}
+.asset-book .bk-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.asset-book .bk-title{font-size:13px;font-weight:700;letter-spacing:.3px;}
+.asset-book .bk-slot{font-size:11px;color:#8b94a3;font-variant-numeric:tabular-nums;}
+.asset-book .bk-row{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:4px;font-variant-numeric:tabular-nums;}
+.asset-book .bk-row .k{color:#8b94a3;}
+.b-pause{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#332a10;color:#ffcf6b;border:1px solid #ffb454;}
+.b-pause-ok{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#3ddc84;}
+.b-live{padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#3a1013;color:#ff8c91;border:1px solid #ff5c63;}
+.b-paper{padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#12341f;color:#3ddc84;}
+.freshwarn{color:#ffb454;}
+.r-queue{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#332a10;color:#ffcf6b;white-space:nowrap;}
+.r-wake{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#3a1013;color:#ff8c91;}
+.vd-approved{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#3ddc84;}
+.vd-vetoed{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#3a1013;color:#ff8c91;}
+.vd-other{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#232a36;color:#9aa4b2;}
+/* 시장 심리(공포·탐욕) 패널 */
+.fg-ef{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#3a1013;color:#ff5c63;}
+.fg-f{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#3a2410;color:#ff8c4b;}
+.fg-n{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#232a36;color:#9aa4b2;}
+.fg-g{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#7bd88f;}
+.fg-eg{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#0d3b1e;color:#3ddc84;}
+.fg-wrap+.fg-wrap{border-top:1px solid #1c2433;margin-top:16px;padding-top:16px;}
+.fg-row{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;}
+.fg-main{flex:1;min-width:280px;}
+.fg-spark{flex:0 0 auto;}
+.fg-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.fg-lab{font-size:11px;color:#8b94a3;text-transform:uppercase;letter-spacing:.6px;}
+.fg-score{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;}
+.fg-gauge{position:relative;height:10px;border-radius:6px;margin-top:10px;background:linear-gradient(90deg,#ff5c63 0%,#ff8c4b 25%,#9aa4b2 50%,#7bd88f 75%,#3ddc84 100%);}
+.fg-mark{position:absolute;top:-4px;width:3px;height:18px;border-radius:2px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.8);transform:translateX(-50%);}
+.fg-ticks{display:flex;justify-content:space-between;font-size:10px;color:#5a6373;margin-top:6px;}
+.fg-foot{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;margin-top:12px;}
+.fg-comps{display:flex;flex-wrap:wrap;gap:10px 16px;}
+.fg-c{display:flex;align-items:center;gap:6px;font-size:11px;color:#8b94a3;}
+.fg-clab{font-size:10px;color:#5a6373;text-transform:uppercase;letter-spacing:.5px;align-self:center;}
+.fg-cb{display:inline-block;width:60px;height:5px;border-radius:3px;background:#1c2433;overflow:hidden;}
+.fg-cb i{display:block;height:100%;border-radius:3px;}
+.fg-cv{font-variant-numeric:tabular-nums;color:#cdd4e0;}
+.fg-note{font-size:12px;color:#8b94a3;margin-left:auto;}
+.fg-cap{font-size:10px;color:#5a6373;margin-top:3px;text-align:right;}
+.fg-src{font-size:11px;color:#5a6373;margin-top:8px;}
+/* Argus vs 코스피·S&P 수익률 차트 */
+.bench-chart{margin-top:16px;padding-top:14px;border-top:1px solid #1c2433;width:100%;}
+.bench-chart .bc-hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.bench-chart .bc-ttl{font-size:12px;color:#8b94a3;text-transform:uppercase;letter-spacing:.6px;}
+.bench-chart .bc-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin-left:auto;}
+.bench-chart .bc-leg i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle;}
+.bench-chart .bc-stats{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:13px;font-variant-numeric:tabular-nums;}
+.bench-chart .bc-stats .k{color:#8b94a3;font-size:11px;margin-right:4px;}
+.bench-chart .bc-wrap{position:relative;width:100%;}
+.bench-chart .bc-wrap svg{display:block;width:100%;max-width:none;height:240px;}
+.bench-chart .bc-tip{position:absolute;z-index:5;min-width:168px;padding:10px 12px;border-radius:10px;
+  background:#141925;border:1px solid #2a3344;box-shadow:0 8px 24px rgba(0,0,0,.45);
+  font-size:12px;line-height:1.55;pointer-events:none;}
+.bench-chart .bc-tip[hidden]{display:none;}
+.bench-chart .bc-tip .bc-tip-dt{font-weight:600;color:#e6e9ef;margin-bottom:6px;font-size:13px;}
+.bench-chart .bc-tip .bc-tip-row{display:flex;justify-content:space-between;gap:12px;}
+.bench-chart .bc-tip .bc-tip-lab{color:#8b94a3;}
+.bench-chart .bc-tip .bc-tip-val{font-variant-numeric:tabular-nums;font-family:ui-monospace,Consolas,monospace;}
+/* 탭 */
+.tabs>input[type=radio]{position:absolute;opacity:0;pointer-events:none;}
+.tabbar{display:flex;gap:6px;margin:18px 0 4px;border-bottom:1px solid #222a3a;flex-wrap:wrap;}
+.tabbar label{padding:9px 16px;font-size:13px;color:#8b94a3;cursor:pointer;border:1px solid transparent;border-bottom:none;border-radius:9px 9px 0 0;user-select:none;}
+.tabbar label:hover{color:#cdd4e0;}
+.tabpage{display:none;}
+#t-today:checked~.tabbar label[for=t-today],
+#t-research:checked~.tabbar label[for=t-research],
+#t-perf:checked~.tabbar label[for=t-perf],
+#t-value:checked~.tabbar label[for=t-value],
+#t-system:checked~.tabbar label[for=t-system]{color:#e6e9ef;background:#141925;border-color:#222a3a;}
+#t-today:checked~.page-today,
+#t-research:checked~.page-research,
+#t-perf:checked~.page-perf,
+#t-value:checked~.page-value,
+#t-system:checked~.page-system{display:block;}
+/* 리서치 도씨에 카드 */
+.dos-help{font-size:12px;color:#8b94a3;line-height:1.55;margin:0 0 12px;}
+.dos-list{display:flex;flex-direction:column;gap:8px;}
+.dos-card{background:#101622;border:1px solid #222a3a;border-radius:10px;overflow:hidden;}
+.dos-card>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;gap:8px 12px;
+  align-items:center;padding:10px 12px;user-select:none;}
+.dos-card>summary::-webkit-details-marker{display:none;}
+.dos-card>summary:hover{background:#141925;}
+.dos-card[open]>summary{border-bottom:1px solid #1c2433;}
+.dos-card .dos-name{font-weight:600;min-width:4.5em;}
+.dos-card .dos-meta{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  font-size:12px;color:#8b94a3;}
+.dos-body{padding:12px 14px 14px;}
+.dos-levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;
+  margin-bottom:12px;}
+.dos-levels .k{font-size:10px;color:#5a6373;text-transform:uppercase;letter-spacing:.5px;}
+.dos-levels .v{font-size:13px;margin-top:2px;font-variant-numeric:tabular-nums;
+  font-family:ui-monospace,Consolas,monospace;}
+.dos-thesis{font-size:13px;line-height:1.65;color:#cdd4e0;white-space:pre-wrap;word-break:break-word;}
+.dos-flow{margin-top:12px;padding-top:12px;border-top:1px solid #1c2433;font-size:12px;line-height:1.55;}
+.dos-flow .fl-detail{color:#8b94a3;margin-top:4px;white-space:pre-wrap;word-break:break-word;}
+.zx-in{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#3ddc84;}
+.zx-above{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#332a10;color:#ffcf6b;}
+.zx-below{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#232a36;color:#9aa4b2;}
+.zx-inval{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#3a1013;color:#ff8c91;}
+.fl-ok{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#3ddc84;}
+.fl-wait{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#1a2740;color:#5aa9ff;}
+.fl-ready{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#12341f;color:#7bd88f;}
+.fl-cut{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#3a1013;color:#ff8c91;}
+.fl-skip{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#332a10;color:#ffcf6b;}
+.fl-mute{padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#232a36;color:#9aa4b2;}
+
+.pub-hd{margin-bottom:6px;}
+.pub-lead{color:#8b94a3;font-size:13px;margin-top:8px;line-height:1.7;}
+.pub-foot{margin-top:34px;padding-top:16px;border-top:1px solid #1c2433;color:#5a6373;
+  font-size:11px;line-height:1.8;}
+.pub-bhl{font-weight:700;font-size:15px;color:#e6ebf3;margin-bottom:8px;}
+.pub-watch{margin:12px 0 0 0;padding-left:18px;color:#a8b1c0;font-size:13px;line-height:1.9;}
+</style></head><body><div class=wrap><div class=pub-hd><h1><span class=eye>&#128065;</span> Argus <span style='color:#8b94a3'>· 자율 투자 에이전트</span></h1><div class=sub>2026-09-15 08:00 기준 스냅샷</div><div class=pub-lead>시장 심리와 국면을 읽고, 종목별 리서치(도시에)를 근거로 진입·손절·목표를 스스로 정해 운용하는 봇의 현황입니다. 아래는 봇이 <b>무엇을 보고 어떻게 판단했는지</b>만 담고 있습니다.</div></div><div class=sec>시장 심리 (공포 · 탐욕)</div><div class=panel><div class=fg-wrap><div class=fg-row><div class=fg-main><div class=fg-head><span class=fg-lab>국내 · KR</span><span class=fg-score style='color:#ff5c63'>50.4</span><span class=fg-ef>극단적 공포</span></div><div class=fg-gauge><div class=fg-mark style='left:50.4%'></div></div><div class=fg-ticks><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div><div class=fg-foot><div class=fg-comps><span class=fg-clab>성분점수</span><span class=fg-c><span>지수낙폭</span><span class=fg-cb><i style='width:65%;background:#7bd88f'></i></span><span class=fg-cv>65.3</span></span><span class=fg-c><span>5일수익률</span><span class=fg-cb><i style='width:28%;background:#ff8c4b'></i></span><span class=fg-cv>28.0</span></span></div><div class=fg-note><span class=freshwarn>불완전</span> · 이력대비 12백분위 (50=평년) · KOSPI 20일 고점 대비 -5.2% · 5일 -4.4% · <span class=muted>브레드스 성분 없음(장전 배치 경로)</span> · VKOSPI 46.28 (전일) · 풋콜 0.78</div></div><div class=fg-src>브레드스·낙폭·5일 합성 + KRX 전일(VKOSPI·풋콜은 점수 외 부가)</div></div><div class=fg-spark><svg viewBox='0 0 240 44' width=240 height=44 style='display:block'><rect x=0 y='2.0' width=240 height='10.0' fill='#3ddc84' opacity='.05'/><rect x=0 y='32.0' width=240 height='10.0' fill='#ff5c63' opacity='.05'/><line x1=0 y1='22.0' x2=240 y2='22.0' stroke='#2a3344' stroke-dasharray='3 3'/><polyline fill=none stroke='#ff5c63' stroke-width='1.8' stroke-linejoin=round points='0.0,21.8 0.6,21.8 1.2,21.8 1.8,21.8 2.4,21.8 3.0,21.8 3.6,21.8 4.2,21.8 4.8,21.8 5.4,21.8 6.0,21.8 6.6,21.8 7.2,21.8 7.8,21.8 8.4,21.8 9.0,21.8 9.6,21.8 10.2,21.8 10.8,23.0 11.4,23.0 12.0,23.0 12.6,23.0 13.2,23.0 13.8,23.0 14.4,23.0 15.0,23.0 15.6,23.0 16.2,23.0 16.8,23.0 17.4,22.4 18.0,21.6 18.6,21.2 19.2,21.2 19.8,21.6 20.4,21.8 21.0,21.6 21.6,21.8 22.2,21.6 22.8,21.8 23.4,22.0 24.0,21.6 24.6,21.2 25.2,18.7 25.8,18.1 26.4,18.5 27.0,18.5 27.6,18.5 28.2,18.7 28.8,18.7 29.4,18.7 29.9,18.7 30.5,18.9 31.1,18.9 31.7,18.9 32.3,18.7 32.9,18.3 33.5,17.9 34.1,17.9 34.7,17.9 35.3,17.9 35.9,17.9 36.5,17.9 37.1,17.9 37.7,17.9 38.3,17.9 38.9,17.9 39.5,17.9 40.1,17.9 40.7,17.9 41.3,17.9 41.9,17.9 42.5,17.9 43.1,17.9 43.7,17.9 44.3,17.9 44.9,17.9 45.5,17.9 46.1,17.9 46.7,17.9 47.3,17.9 47.9,17.9 48.5,17.9 49.1,17.9 49.7,17.9 50.3,17.9 50.9,17.9 51.5,17.9 52.1,17.9 52.7,17.9 53.3,17.6 53.9,17.6 54.5,17.1 55.1,16.8 55.7,16.0 56.3,16.6 56.9,16.2 57.5,16.4 58.1,16.2 58.7,16.4 59.3,16.6 59.9,16.6 60.5,16.2 61.1,16.0 61.7,11.6 62.3,11.4 62.9,11.4 63.5,11.4 64.1,11.6 64.7,11.6 65.3,11.6 65.9,11.6 66.5,11.8 67.1,11.6 67.7,11.6 68.3,11.6 68.9,11.4 69.5,11.2 70.1,11.3 70.7,11.0 71.3,10.7 71.9,7.9 72.5,11.4 73.1,11.8 73.7,11.4 74.3,11.4 74.9,11.3 75.5,11.4 76.1,11.3 76.7,11.4 77.3,11.4 77.9,11.3 78.5,12.2 79.1,12.4 79.7,13.1 80.3,13.8 80.9,13.9 81.5,13.9 82.1,13.9 82.7,13.9 83.3,13.8 83.9,13.8 84.5,13.8 85.1,13.8 85.7,13.6 86.3,13.4 86.9,9.6 87.5,9.6 88.1,9.6 88.7,9.6 89.3,9.6 89.8,9.6 90.4,9.6 91.0,9.6 91.6,9.6 92.2,9.6 92.8,9.6 93.4,9.6 94.0,9.6 94.6,9.6 95.2,9.6 95.8,9.6 96.4,9.6 97.0,9.6 97.6,9.6 98.2,9.6 98.8,9.6 99.4,9.6 100.0,9.6 100.6,9.6 101.2,9.6 101.8,9.6 102.4,9.6 103.0,13.2 103.6,14.0 104.2,13.2 104.8,13.2 105.4,13.2 106.0,13.6 106.6,13.4 107.2,13.2 107.8,13.2 108.4,14.2 109.0,13.6 109.6,13.6 110.2,13.2 110.8,12.8 111.4,10.1 112.0,10.0 112.6,10.1 113.2,10.1 113.8,10.2 114.4,10.2 115.0,10.2 115.6,10.2 116.2,10.2 116.8,10.2 117.4,10.4 118.0,10.6 118.6,10.8 119.2,10.8 119.8,4.1 120.4,4.1 121.0,4.1 121.6,4.1 122.2,4.1 122.8,4.1 123.4,4.1 124.0,4.1 124.6,4.1 125.2,4.1 125.8,4.1 126.4,4.1 127.0,4.1 127.6,4.1 128.2,4.1 128.8,4.1 129.4,4.1 130.0,4.1 130.6,4.1 131.2,4.1 131.8,4.1 132.4,4.1 133.0,4.1 133.6,4.1 134.2,4.1 134.8,4.1 135.4,4.1 136.0,9.4 136.6,9.6 137.2,10.0 137.8,9.3 138.4,10.0 139.0,10.4 139.6,10.6 140.2,10.2 140.8,10.4 141.4,10.0 142.0,9.8 142.6,9.6 143.2,9.8 143.8,9.4 144.4,9.6 145.0,9.4 145.6,9.6 146.2,9.8 146.8,9.8 147.4,9.8 148.0,9.8 148.6,9.8 149.2,9.8 149.7,9.8 150.3,9.8 150.9,10.0 151.5,10.0 152.1,9.8 152.7,5.0 153.3,5.0 153.9,5.0 154.5,5.0 155.1,5.0 155.7,5.0 156.3,5.0 156.9,5.0 157.5,5.0 158.1,5.0 158.7,5.0 159.3,5.0 159.9,5.0 160.5,5.0 161.1,5.0 161.7,5.0 162.3,5.0 162.9,5.0 163.5,5.0 164.1,5.0 164.7,5.0 165.3,5.0 165.9,5.0 166.5,5.0 167.1,5.0 167.7,5.0 168.3,5.0 168.9,5.0 169.5,11.7 170.1,12.6 170.7,12.6 171.3,11.7 171.9,13.4 172.5,12.6 173.1,15.2 173.7,15.2 174.3,15.0 174.9,15.4 175.5,15.8 176.1,15.8 176.7,15.6 177.3,15.0 177.9,15.0 178.5,15.2 179.1,14.7 179.7,15.0 180.3,15.2 180.9,15.4 181.5,14.9 182.1,14.9 182.7,15.0 183.3,14.9 183.9,15.3 184.5,15.0 185.1,15.3 185.7,15.3 186.3,10.6 186.9,10.6 187.5,10.6 188.1,10.6 188.7,10.6 189.3,10.6 189.9,10.6 190.5,10.6 191.1,10.6 191.7,10.6 192.3,10.6 192.9,10.6 193.5,10.6 194.1,10.6 194.7,10.6 195.3,10.6 195.9,10.6 196.5,10.6 197.1,10.6 197.7,10.6 198.3,10.6 198.9,10.6 199.5,10.6 200.1,10.6 200.7,10.6 201.3,10.6 201.9,10.6 202.5,10.6 203.1,10.6 203.7,10.6 204.3,10.6 204.9,10.6 205.5,10.6 206.1,14.5 206.7,15.0 207.3,15.0 207.9,16.4 208.5,15.6 209.1,16.8 209.6,16.6 210.2,15.4 210.8,15.4 211.4,15.4 212.0,15.2 212.6,15.4 213.2,15.4 213.8,16.2 214.4,16.2 215.0,16.2 215.6,16.2 216.2,22.4 216.8,22.6 217.4,22.6 218.0,22.6 218.6,22.8 219.2,22.6 219.8,22.8 220.4,23.0 221.0,23.0 221.6,23.0 222.2,22.6 222.8,21.8 223.4,21.8 224.0,21.8 224.6,21.8 225.2,21.8 225.8,21.8 226.4,21.8 227.0,21.8 227.6,21.8 228.2,21.8 228.8,21.8 229.4,21.8 230.0,21.8 230.6,21.8 231.2,21.8 231.8,21.8 232.4,21.8 233.0,21.8 233.6,21.8 234.2,21.8 234.8,21.8 235.4,21.8 236.0,21.8 236.6,21.8 237.2,21.8 237.8,21.8 238.4,21.8 239.0,21.8'/><circle cx='239.0' cy='21.8' r='2.6' fill='#ff5c63'/></svg><div class=fg-cap>누적 400포인트</div></div></div></div><div class=fg-wrap><div class=fg-row><div class=fg-main><div class=fg-head><span class=fg-lab>미국 · US</span><span class=fg-score style='color:#ff8c4b'>31.1</span><span class=fg-f>공포</span></div><div class=fg-gauge><div class=fg-mark style='left:31.1%'></div></div><div class=fg-ticks><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div><div class=fg-foot><div class=fg-comps><span class=fg-clab>성분점수</span><span class=fg-c><span>모멘텀</span><span class=fg-cb><i style='width:25%;background:#ff8c4b'></i></span><span class=fg-cv>25.4</span></span><span class=fg-c><span>주가강도</span><span class=fg-cb><i style='width:4%;background:#ff5c63'></i></span><span class=fg-cv>3.6</span></span><span class=fg-c><span>브레드스</span><span class=fg-cb><i style='width:9%;background:#ff5c63'></i></span><span class=fg-cv>9.0</span></span><span class=fg-c><span>풋콜비율</span><span class=fg-cb><i style='width:36%;background:#ff8c4b'></i></span><span class=fg-cv>35.8</span></span><span class=fg-c><span>변동성</span><span class=fg-cb><i style='width:50%;background:#9aa4b2'></i></span><span class=fg-cv>50.0</span></span><span class=fg-c><span>정크본드</span><span class=fg-cb><i style='width:65%;background:#7bd88f'></i></span><span class=fg-cv>64.6</span></span><span class=fg-c><span>안전자산선호</span><span class=fg-cb><i style='width:29%;background:#ff8c4b'></i></span><span class=fg-cv>29.0</span></span></div><div class=fg-note>1년 61.3 · 1개월 64.3 · 1주 45.2 · 전일 33.3</div></div></div><div class=fg-spark><svg viewBox='0 0 240 44' width=240 height=44 style='display:block'><rect x=0 y='2.0' width=240 height='10.0' fill='#3ddc84' opacity='.05'/><rect x=0 y='32.0' width=240 height='10.0' fill='#ff5c63' opacity='.05'/><line x1=0 y1='22.0' x2=240 y2='22.0' stroke='#2a3344' stroke-dasharray='3 3'/><polyline fill=none stroke='#ff8c4b' stroke-width='1.8' stroke-linejoin=round points='0.0,35.4 2.0,37.9 4.0,38.7 6.0,39.7 8.0,36.0 10.0,35.6 12.1,34.7 14.1,33.2 16.1,33.4 18.1,30.3 20.1,28.5 22.1,26.8 24.1,25.6 26.1,23.1 28.1,19.5 30.1,17.4 32.1,14.6 34.1,14.0 36.2,15.0 38.2,14.6 40.2,15.5 42.2,15.8 44.2,15.5 46.2,15.0 48.2,15.5 50.2,14.2 52.2,13.5 54.2,15.2 56.2,15.1 58.2,14.5 60.3,15.1 62.3,15.1 64.3,15.4 66.3,15.7 68.3,16.0 70.3,15.6 72.3,16.7 74.3,17.2 76.3,18.3 78.3,17.8 80.3,19.0 82.3,18.7 84.4,18.1 86.4,17.8 88.4,17.7 90.4,17.8 92.4,18.2 94.4,19.2 96.4,20.2 98.4,20.2 100.4,25.2 102.4,26.2 104.4,28.5 106.4,31.1 108.5,30.1 110.5,28.6 112.5,26.0 114.5,26.2 116.5,28.8 118.5,27.1 120.5,28.4 122.5,30.6 124.5,31.4 126.5,31.8 128.5,32.1 130.5,31.2 132.6,30.0 134.6,29.4 136.6,29.0 138.6,25.3 140.6,26.1 142.6,26.6 144.6,24.1 146.6,23.3 148.6,25.6 150.6,25.6 152.6,24.2 154.6,25.2 156.7,27.2 158.7,27.6 160.7,24.9 162.7,24.2 164.7,25.6 166.7,25.7 168.7,26.7 170.7,27.2 172.7,31.8 174.7,26.8 176.7,26.2 178.7,23.6 180.8,18.4 182.8,17.9 184.8,18.1 186.8,16.0 188.8,16.2 190.8,18.0 192.8,17.3 194.8,15.6 196.8,16.3 198.8,18.4 200.8,20.2 202.8,19.4 204.9,21.4 206.9,20.1 208.9,20.0 210.9,18.2 212.9,20.4 214.9,19.1 216.9,20.5 218.9,22.3 220.9,24.0 222.9,23.6 224.9,23.0 226.9,23.9 229.0,26.4 231.0,26.7 233.0,29.1 235.0,28.9 237.0,29.6 239.0,29.6'/><circle cx='239.0' cy='29.6' r='2.6' fill='#ff8c4b'/></svg><div class=fg-cap>최근 1년</div></div></div></div></div><div class=sec>오늘의 국면</div><div class=panel><div class=pub-bhl>코스피 -3.26% 급락, 국내 국면은 위험회피</div><div class=mv>코스피는 6684.37로 전일대비 -3.26%, 코스닥은 806.79로 -1.69% 하락하며 국내 국면 라벨은 risk_off로 표시됐다. 미국은 S&amp;P500 7619.98(-0.48%), 나스닥 26186.41(-0.56%)로 완만한 조정을 보였고 국면 라벨은 neutral, 유니버스 전체 실시간 집계(n=87) 기준 20일선 위 비율은 44.8%다. CNN 공포탐욕지수는 31.1(공포)로 전일 33.3, 1주 전 45.2보다 낮아지며 탐욕 쪽에서 멀어졌고 VIX는 17.1로 평상 구간이다. fear_kr(50.4, 우리 이력 대비 11.8퍼센타일)은 브레드스 성분이 빠진 결측 상태라 등급을 확정적으로 읽기는 어렵다. 섹터는 미국에서 에너지·커뮤니케이션·금융이, 국내에서 은행·2차전지·반도체가 강세였고 국내 자동차·헬스케어·증권과 미국 산업재·임의소비재·유틸리티는 약세였다. 원달러는 1346.1원(+0.11%), 금은 -1.66%, WTI는 +1.88%였고 봇의 도시에 스탠스는 강세 6·중립 21·약세 2로 중립 쪽에 크게 기울어 있다.</div><ul class=pub-watch><li>코스피 브레드스 실측 전환 여부</li><li>fear_kr 브레드스 결측 해소 여부</li><li>미 에너지·금융 vs 산업재 순환매 지속성</li></ul><div class='muted mono' style='font-size:11px;margin-top:10px'>2026-09-15 08:00 생성</div></div><div class=sec>시장 국면</div><div class=grid><div class=card><div class=k>KR</div><div class='v neg' style='font-size:17px'>risk_off</div><div class='muted mono' style='font-size:11px;margin-top:4px'>20일선 상회 0% · n=2 · index_proxy</div></div><div class=card><div class=k>US</div><div class='v muted' style='font-size:17px'>neutral</div><div class='muted mono' style='font-size:11px;margin-top:4px'>20일선 상회 45% · n=87 · universe_live</div></div></div><div class=sec>보유 종목</div><div class=panel><table><tr><th>종목명</th><th>시장</th><th>전략</th><th>평가수익률</th><th>평단</th><th>현재가</th><th>손절</th><th>목표</th></tr><tr><td>현대엘리베이터</td><td>KR</td><td class=muted>value</td><td class='mono neg'>-2.25%</td><td class=mono>75,600</td><td class=mono>73,900</td><td class=mono>60,480</td><td class=mono>86,825</td></tr><tr><td>기업은행</td><td>KR</td><td class=muted>value</td><td class='mono pos'>+1.21%</td><td class=mono>20,600</td><td class=mono>20,850</td><td class=mono>16,480</td><td class=mono>23,240</td></tr><tr><td>현대글로비스</td><td>KR</td><td class=muted>value</td><td class='mono pos'>+2.99%</td><td class=mono>201,000</td><td class=mono>207,000</td><td class=mono>160,800</td><td class=mono>219,420</td></tr><tr><td>HK이노엔</td><td>KR</td><td class=muted>value</td><td class='mono neg'>-4.69%</td><td class=mono>41,600</td><td class=mono>39,650</td><td class=mono>33,280</td><td class=mono>44,735</td></tr><tr><td>Devon Energy Corporation</td><td>US</td><td class=muted>macd</td><td class='mono pos'>+0.35%</td><td class=mono>49.63</td><td class=mono>49.80</td><td class=mono>47.00</td><td class=mono>54.00</td></tr><tr><td>인터 &amp; CO</td><td>US</td><td class=muted>value</td><td class='mono pos'>+0.75%</td><td class=mono>5.54</td><td class=mono>5.58</td><td class=mono>4.42</td><td class=mono>6.99</td></tr><tr><td>Medtronic plc.</td><td>US</td><td class=muted>macd</td><td class='mono pos'>+2.81%</td><td class=mono>91.01</td><td class=mono>93.57</td><td class=mono>87.80</td><td class=mono>99.00</td></tr><tr><td>유니버설 헬스 서비시스</td><td>US</td><td class=muted>value</td><td class='mono neg'>-1.33%</td><td class=mono>175.59</td><td class=mono>173.25</td><td class=mono>140.47</td><td class=mono>195.88</td></tr><tr><td>ExxonMobil Holdings Corporation</td><td>US</td><td class=muted>macd</td><td class='mono pos'>+2.32%</td><td class=mono>161.48</td><td class=mono>165.23</td><td class=mono>153.50</td><td class=mono>177.00</td></tr></table></div><div class=sec>진입대기</div><div class=panel><span class=muted>대기 없음.</span></div><div class=sec>도시에 (Athena · 강세→중립→약세 · 최신순)</div><div class=panel><table><tr><th>종목명</th><th>stance</th><th>진입존</th><th>무효화</th><th>목표</th><th>rr</th><th>확신도</th><th>나이</th></tr><tr><td>저스템</td><td><span class=b-bull>강세</span></td><td class=mono>13,500.00~14,300.00</td><td class=mono>12,300.00</td><td class=mono>17,500.00</td><td class=mono>2.25</td><td class=mono>0.55</td><td class=mono>2h</td></tr><tr><td>씨에스윈드</td><td><span class=b-bull>강세</span></td><td class=mono>50,000.00~51,500.00</td><td class=mono>47,800.00</td><td class=mono>58,000.00</td><td class=mono>2.46</td><td class=mono>0.45</td><td class=mono>2h</td></tr><tr><td>한화엔진</td><td><span class=b-bull>강세</span></td><td class=mono>47,000.00~48,000.00</td><td class=mono>45,000.00</td><td class=mono>54,400.00</td><td class=mono>2.76</td><td class=mono>0.55</td><td class=mono>2h</td></tr><tr><td>삼성중공업</td><td><span class=b-bull>강세</span></td><td class=mono>21,000.00~21,500.00</td><td class=mono>20,500.00</td><td class=mono>24,000.00</td><td class=mono>3.67</td><td class=mono>0.48</td><td class=mono>2h</td></tr><tr><td>HD한국조선해양</td><td><span class=b-bull>강세</span></td><td class=mono>350,000.00~358,000.00</td><td class=mono>335,000.00</td><td class=mono>385,000.00</td><td class=mono>1.63</td><td class=mono>0.42</td><td class=mono>2h</td></tr><tr><td>실리콘투</td><td><span class=b-bull>강세</span></td><td class=mono>42,000.00~43,500.00</td><td class=mono>39,500.00</td><td class=mono>48,500.00</td><td class=mono>1.77</td><td class=mono>0.55</td><td class=mono>2h</td></tr><tr><td>미래에셋증권</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.30</td><td class=mono>2h</td></tr><tr><td>테크윙</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.20</td><td class=mono>2h</td></tr><tr><td>달바글로벌</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.35</td><td class=mono>2h</td></tr><tr><td>HD현대마린솔루션</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.35</td><td class=mono>2h</td></tr><tr><td>아모텍</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.20</td><td class=mono>2h</td></tr><tr><td>엑스게이트</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.32</td><td class=mono>2h</td></tr><tr><td>우리로</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.30</td><td class=mono>2h</td></tr><tr><td>현대건설</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.28</td><td class=mono>2h</td></tr><tr><td>HD현대중공업</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.30</td><td class=mono>2h</td></tr><tr><td>비에이치아이</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.15</td><td class=mono>2h</td></tr><tr><td>심텍</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.20</td><td class=mono>2h</td></tr><tr><td>현대차</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.38</td><td class=mono>2h</td></tr><tr><td>주성엔지니어링</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.20</td><td class=mono>2h</td></tr><tr><td>한미반도체</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.40</td><td class=mono>2h</td></tr><tr><td>두산퓨얼셀</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.30</td><td class=mono>2h</td></tr><tr><td>우리기술</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.10</td><td class=mono>2h</td></tr><tr><td>알테오젠</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.55</td><td class=mono>2h</td></tr><tr><td>기업은행</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.30</td><td class=mono>2h</td></tr><tr><td>현대엘리베이터</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.40</td><td class=mono>2h</td></tr><tr><td>HK이노엔</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.20</td><td class=mono>2h</td></tr><tr><td>현대글로비스</td><td><span class=b-neut>중립</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.35</td><td class=mono>2h</td></tr><tr><td>올릭스</td><td><span class=b-bear>약세</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.55</td><td class=mono>2h</td></tr><tr><td>페니트리움바이오</td><td><span class=b-bear>약세</span></td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>–</td><td class=mono>0.55</td><td class=mono>2h</td></tr></table></div><div class=sec>성과</div><div class=panel><table><tr><th>전략</th><th>거래수</th><th>승률</th><th>평균수익률</th></tr><tr><td>macd</td><td class=mono>5</td><td class=mono>40%</td><td class='mono pos'>+7.84%</td></tr><tr><td>value</td><td class=mono>3</td><td class=mono>100%</td><td class='mono pos'>+13.16%</td></tr><tr><td>ma_crossover</td><td class=mono>2</td><td class=mono>0%</td><td class='mono neg'>-2.53%</td></tr><tr><td>volatility_breakout</td><td class=mono>1</td><td class=mono>0%</td><td class='mono neg'>-0.79%</td></tr><tr><td>rsi_reversion</td><td class=mono>1</td><td class=mono>0%</td><td class='mono neg'>-5.79%</td></tr></table><div class=sec style='margin-top:18px'>지수 대비 알파 <span class=muted>(청산 거래 평균 수익률 − 같은 기간 지수 B&amp;H)</span></div><table><tr><th>시장</th><th>시작</th><th>봇 평균수익률</th><th>벤치마크</th><th>지수 수익률</th><th>알파</th></tr><tr><td>KR</td><td class=mono>07-15~</td><td class='mono pos'>+6.74%</td><td>코스피</td><td class=mono>-8.24%</td><td class='mono pos'><b>+14.98%p</b></td></tr><tr><td>US</td><td class=mono>08-28~</td><td class='mono pos'>+3.29%</td><td>S&amp;P500</td><td class=mono>-1.10%</td><td class='mono pos'><b>+4.39%p</b></td></tr></table><div class=sec style='margin-top:18px'>종료 거래</div><table><tr><th>청산</th><th>시장</th><th>종목명</th><th>전략</th><th>수익률</th></tr><tr><td class=mono>09-14</td><td>KR</td><td>대신증권</td><td class=muted>value</td><td class='mono pos'>+3.75%</td></tr><tr><td class=mono>09-11</td><td>KR</td><td>삼화콘덴서</td><td class=muted>macd</td><td class='mono pos'>+26.01%</td></tr><tr><td class=mono>09-11</td><td>US</td><td>NVIDIA Corporation</td><td class=muted>ma_crossover</td><td class='mono neg'>-0.09%</td></tr><tr><td class=mono>09-09</td><td>KR</td><td>LG전자</td><td class=muted>macd</td><td class='mono neg'>-0.24%</td></tr><tr><td class=mono>09-09</td><td>US</td><td>길리어드 사이언스</td><td class=muted>macd</td><td class='mono neg'>-0.07%</td></tr><tr><td class=mono>09-04</td><td>US</td><td>Robinhood Markets, Inc.</td><td class=muted>macd</td><td class='mono pos'>+18.28%</td></tr><tr><td class=mono>09-01</td><td>KR</td><td>LS ELECTRIC</td><td class=muted>macd</td><td class='mono neg'>-4.76%</td></tr><tr><td class=mono>08-29</td><td>US</td><td>MARA Holdings, Inc.</td><td class=muted>ma_crossover</td><td class='mono neg'>-4.96%</td></tr><tr><td class=mono>08-28</td><td>KR</td><td>두산에너빌리티</td><td class=muted>volatility_breakout</td><td class='mono neg'>-0.79%</td></tr><tr><td class=mono>08-25</td><td>KR</td><td>삼성전자</td><td class=muted>rsi_reversion</td><td class='mono neg'>-5.79%</td></tr><tr><td class=mono>08-13</td><td>KR</td><td>실리콘투</td><td class=muted>value</td><td class='mono pos'>+13.59%</td></tr><tr><td class=mono>08-10</td><td>KR</td><td>노바렉스</td><td class=muted>value</td><td class='mono pos'>+22.15%</td></tr></table></div><div class=sec>최근 판단</div><div class=panel><table style='margin-top:12px'><tr><th>시각</th><th>종목명</th><th>액션</th><th>확신도</th><th>판정</th></tr><tr><td class=mono>04:34:21</td><td>General Motors Company</td><td class=mono>HOLD</td><td class=mono>0.30</td><td><span class=vd-vetoed>vetoed</span></td></tr><tr><td class=mono>04:34:21</td><td>Williams Companies, Inc. (The)</td><td class=mono>HOLD</td><td class=mono>0.30</td><td><span class=vd-vetoed>vetoed</span></td></tr><tr><td class=mono>04:34:21</td><td>Alphabet Inc.</td><td class=mono>HOLD</td><td class=mono>0.35</td><td><span class=vd-vetoed>vetoed</span></td></tr><tr><td class=mono>04:34:21</td><td>Citigroup, Inc.</td><td class=mono>HOLD</td><td class=mono>0.30</td><td><span class=vd-vetoed>vetoed</span></td></tr><tr><td class=mono>04:34:21</td><td>The Kraft Heinz Company</td><td class=mono>HOLD</td><td class=mono>0.25</td><td><span class=vd-vetoed>vetoed</span></td></tr><tr><td class=mono>04:34:21</td><td>Verizon Communications Inc.</td><td class=mono>HOLD</td><td class=mono>0.30</td><td><span class=vd-vetoed>vetoed</span></td></tr><tr><td class=mono>04:34:21</td><td>Amphenol Corporation</td><td class=mono>HOLD</td><td class=mono>0.30</td><td><span class=vd-vetoed>vetoed</span></td></tr><tr><td class=mono>04:34:21</td><td>The Trade Desk, Inc.</td><td class=mono>HOLD</td><td class=mono>0.35</td><td><span class=vd-vetoed>vetoed</span></td></tr></table></div><div class=pub-foot>이 페이지는 공유용으로 자동 생성됩니다. 계좌 잔고·투자 금액·보유 수량 등 자산 규모에 해당하는 정보는 의도적으로 제외되어 있습니다. 표시된 가격은 시장 가격이며 투자 권유가 아닙니다.</div></div></body></html>
